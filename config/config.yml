@@ -1,19 +1,27 @@
 mqtt:
   enabled: False
 
-# Decodificación HW por GPU AMD Vega
 ffmpeg:
   hwaccel_args: preset-vaapi
 
+# Configuración de Streams en HD para la interfaz web (go2rtc)
+go2rtc:
+  streams:
+    imou_cruiser_ptz:
+      - rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=0
+    imou_cruiser_fija:
+      - rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=0
+
 cameras:
-  # Lente 1: Cámara Rotatoria PTZ (Canal 1)
   imou_cruiser_ptz:
     ffmpeg:
       input_args: preset-rtsp-generic
       inputs:
-        - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=0
+        # Usa go2rtc para la grabación HD
+        - path: rtsp://127.0.0.1:8554/imou_cruiser_ptz
           roles:
             - record
+        # Usa subtype=1 directamente para la detección
         - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=1
           roles:
             - detect
@@ -36,12 +44,11 @@ cameras:
       user: admin
       password: L2xr1zum
 
-  # Lente 2: Cámara Fija (Canal 2)
   imou_cruiser_fija:
     ffmpeg:
       input_args: preset-rtsp-generic
       inputs:
-        - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=0
+        - path: rtsp://127.0.0.1:8554/imou_cruiser_fija
           roles:
             - record
         - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=1
