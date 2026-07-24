@@ -1,40 +1,81 @@
 mqtt:
-  enabled: False
+  enabled: false
 
 ffmpeg:
-  hwaccel_args: preset-vaapi
+  hwaccel_args: preset-vaapi # Decodificación por HW en la iGPU Vega 11 (soporta H.265)
 
+# Detector OpenVINO en CPU: mucho más eficiente que el detector CPU por defecto.
+# Funciona en AMD aunque OpenVINO no lo soporte oficialmente.
+detectors:
+  ov:
+    type: openvino
+    device: CPU
+
+model:
+  width: 300
+  height: 300
+  input_tensor: nhwc
+  input_pixel_format: bgr
+  path: /openvino-model/ssdlite_mobilenet_v2.xml
+  labelmap_path: /openvino-model/coco_91cl_bkgr.txt
+
+# go2rtc abre UNA sola conexión por stream a la cámara y Frigate/UI consumen
+# desde el restream local. Las Imou limitan conexiones simultáneas; antes se
+# abrían 6 y los streams se degradaban.
+# backchannel=0 evita que go2rtc reserve el canal de audio bidireccional.
 go2rtc:
   streams:
     imou_cruiser_ptz:
-      - "rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=0#transport=tcp"
+      - "rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=0#backchannel=0"
+    imou_cruiser_ptz_sub:
+      - "rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=1#backchannel=0"
     imou_cruiser_fija:
-      - "rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=0#transport=tcp"
+      - "rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=0#backchannel=0"
+    imou_cruiser_fija_sub:
+      - "rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=1#backchannel=0"
+
+objects:
+  track:
+    - person
+    - car
+    - dog
+    - cat
+
+record:
+  enabled: true
+  retain:
+    days: 7
+    mode: motion # Solo segmentos con movimiento; "all" llenaba ~60 GB/día
+  alerts:
+    retain:
+      days: 14
+  detections:
+    retain:
+      days: 14
 
 cameras:
   imou_cruiser_ptz:
     ffmpeg:
-      input_args: preset-rtsp-generic
+      output_args:
+        record: preset-record-generic-audio-copy # La cámara entrega audio AAC
       inputs:
-        - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=0
+        - path: rtsp://127.0.0.1:8554/imou_cruiser_ptz
+          input_args: preset-rtsp-restream
           roles:
             - record
-        - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=1
+        - path: rtsp://127.0.0.1:8554/imou_cruiser_ptz_sub
+          input_args: preset-rtsp-restream
           roles:
             - detect
-
     detect:
-      enabled: True
+      enabled: true
       width: 640
       height: 480
       fps: 5
-
-    record:
-      enabled: True
-      retain:
-        days: 7
-        mode: all
-
+    live:
+      streams:
+        HD: imou_cruiser_ptz
+        SD: imou_cruiser_ptz_sub
     onvif:
       host: 192.168.100.124
       port: 80
@@ -43,23 +84,23 @@ cameras:
 
   imou_cruiser_fija:
     ffmpeg:
-      input_args: preset-rtsp-generic
+      output_args:
+        record: preset-record-generic-audio-copy
       inputs:
-        - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=0
+        - path: rtsp://127.0.0.1:8554/imou_cruiser_fija
+          input_args: preset-rtsp-restream
           roles:
             - record
-        - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=1
+        - path: rtsp://127.0.0.1:8554/imou_cruiser_fija_sub
+          input_args: preset-rtsp-restream
           roles:
             - detect
-
     detect:
-      enabled: True
+      enabled: true
       width: 640
       height: 480
       fps: 5
-
-    record:
-      enabled: True
-      retain:
-        days: 7
-        mode: all
+    live:
+      streams:
+        HD: imou_cruiser_fija
+        SD: imou_cruiser_fija_sub
