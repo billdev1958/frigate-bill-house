@@ -1,0 +1,18 @@
+services:
+  frigate:
+    container_name: frigate
+    image: ghcr.io/blakeblackshear/frigate:stable
+    privileged: true
+    restart: unless-stopped
+    shm_size: "1024mb" # Necesario para procesar múltiples feeds de alta resolución
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128 # Aceleración HW con AMD Vega
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config/config.yml:/config/config.yml
+      - ./storage:/media/frigate # Aquí se guardarán los clips y grabaciones
+    ports:
+      - "5000:5000"       # Web UI
+      - "8554:8554"       # RTSP re-stream
+      - "8555:8555/tcp"   # WebRTC
+      - "8555:8555/udp"   # WebRTC

@@ -1,0 +1,45 @@
+mqtt:
+  enabled: false # Lo mantenemos desactivado por ahora si no usas Home Assistant
+
+# Aceleración por hardware para AMD Vega (VAAPI)
+ffmpeg:
+  hwaccel_args: preset-vaapi
+
+cameras:
+  imou_cruiser:
+    ffmpeg:
+      inputs:
+        # Flujo principal en Alta Definición (Grabación)
+        - path: 
+            rtsp://admin:TU_CONTRASEÑA@192.168.1.XX:554/cam/realmonitor?channel=1&subtype=0
+          roles:
+            - record
+        # Flujo secundario en Baja Definición (Detección de IA ligera)
+        - path: 
+            rtsp://admin:TU_CONTRASEÑA@192.168.1.XX:554/cam/realmonitor?channel=1&subtype=1
+          roles:
+            - detect
+
+    detect:
+      enabled: true
+      width: 1280
+      height: 720
+      fps: 5
+
+    objects:
+      track:
+        - person
+        - car
+
+    record:
+      enabled: true
+      continuous:
+        days: 7
+      motion:
+        days: 0
+    onvif:
+      host: 192.168.100.124 # Reemplaza por la IP de tu cámara Imou
+      port: 80
+      user: admin
+      password: L2xr1zum 
+version: 0.17-0
