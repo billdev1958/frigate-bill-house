@@ -1,9 +1,17 @@
 mqtt:
   enabled: False
 
-# Aceleración por hardware con GPU AMD Vega
+# Aceleración por Hardware con GPU AMD Vega
 ffmpeg:
   hwaccel_args: preset-vaapi
+
+# Motor de retransmisión para vista web en vivo (WebRTC / MSE)
+go2rtc:
+  streams:
+    imou_cruiser_ptz:
+      - "rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=0"
+    imou_cruiser_fija:
+      - "rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=0"
 
 cameras:
   # Lente 1: Cámara PTZ (Canal 1)
@@ -11,11 +19,11 @@ cameras:
     ffmpeg:
       input_args: preset-rtsp-generic
       inputs:
-        # Stream HD nativo para grabar
+        # Stream HD directo para la grabación
         - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=0
           roles:
             - record
-        # Stream SD nativo para detección
+        # Stream SD directo para la detección
         - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=1
           roles:
             - detect
@@ -43,11 +51,9 @@ cameras:
     ffmpeg:
       input_args: preset-rtsp-generic
       inputs:
-        # Stream HD nativo para grabar
         - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=0
           roles:
             - record
-        # Stream SD nativo para detección
         - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=1
           roles:
             - detect
