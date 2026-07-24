@@ -9,8 +9,12 @@ services:
       - /dev/dri/renderD128:/dev/dri/renderD128 # Aceleración HW con AMD Vega
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./config/config.yml:/config/config.yml
+      - ./config:/config
       - ./storage:/media/frigate # Aquí se guardarán los clips y grabaciones
+      - type: tmpfs
+        target: /tmp/cache
+        tmpfs:
+          size: 1000000000
     ports:
       - "5000:5000"       # Web UI
       - "8554:8554"       # RTSP re-stream

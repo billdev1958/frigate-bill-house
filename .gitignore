@@ -1,0 +1,36 @@
+gate Internal Files & Storage
+# ==========================================
+
+# Grabaciones de video, clips, fotos y cache de medios
+storage/
+media/
+exports/
+
+# Archivos de base de datos SQLite y respaldos
+config/frigate.db
+config/frigate.db-shm
+config/frigate.db-wal
+config/backup.db
+config/*.db
+
+# Secretos internos, estado y caches generados por Frigate/go2rtc
+config/.exports
+config/.jwt_secret
+config/.search_stats.json
+config/.timeline
+config/.vacuum
+config/go2rtc_homekit.yml
+config/model_cache/
+
+# ==========================================
+# Archivos de Entorno y Sistema
+# ==========================================
+.env
+.env.local
+*.log
+
+# Archivos del sistema / editores
+.DS_Store
+.idea/
+.vscode/
+*.swp
