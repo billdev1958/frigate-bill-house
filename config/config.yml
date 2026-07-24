@@ -1,45 +1,61 @@
 mqtt:
-  enabled: false # Lo mantenemos desactivado por ahora si no usas Home Assistant
+  enabled: False
 
-# Aceleración por hardware para AMD Vega (VAAPI)
+# Decodificación HW por GPU AMD Vega
 ffmpeg:
   hwaccel_args: preset-vaapi
 
 cameras:
-  imou_cruiser:
+  # Lente 1: Cámara Rotatoria PTZ (Canal 1)
+  imou_cruiser_ptz:
     ffmpeg:
+      input_args: preset-rtsp-generic
       inputs:
-        # Flujo principal en Alta Definición (Grabación)
-        - path: 
-            rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=0
+        - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=0
           roles:
             - record
-        # Flujo secundario en Baja Definición (Detección de IA ligera)
-        - path: 
-            rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=1
+        - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=1
           roles:
             - detect
 
     detect:
-      enabled: true
-      width: 1280
-      height: 720
+      enabled: True
+      width: 640
+      height: 480
       fps: 5
 
-    objects:
-      track:
-        - person
-        - car
-
     record:
-      enabled: true
-      continuous:
+      enabled: True
+      retain:
         days: 7
-      motion:
-        days: 0
+        mode: all
+
     onvif:
       host: 192.168.100.124
       port: 80
       user: admin
-      password: L2xr1zum 
-version: 0.17-0
+      password: L2xr1zum
+
+  # Lente 2: Cámara Fija (Canal 2)
+  imou_cruiser_fija:
+    ffmpeg:
+      input_args: preset-rtsp-generic
+      inputs:
+        - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=0
+          roles:
+            - record
+        - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=1
+          roles:
+            - detect
+
+    detect:
+      enabled: True
+      width: 640
+      height: 480
+      fps: 5
+
+    record:
+      enabled: True
+      retain:
+        days: 7
+        mode: all
