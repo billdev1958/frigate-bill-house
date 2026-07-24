@@ -4,24 +4,23 @@ mqtt:
 ffmpeg:
   hwaccel_args: preset-vaapi
 
-# Configuración de Streams en HD para la interfaz web (go2rtc)
+# Módulo de streaming en tiempo real (pasa el flujo nativo 4K/3K directo al navegador)
 go2rtc:
   streams:
     imou_cruiser_ptz:
-      - rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=0
+      - "rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=0#transport=tcp"
     imou_cruiser_fija:
-      - rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=0
+      - "rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=2&subtype=0#transport=tcp"
 
 cameras:
   imou_cruiser_ptz:
     ffmpeg:
-      input_args: preset-rtsp-generic
       inputs:
-        # Usa go2rtc para la grabación HD
+        # Usa el stream de go2rtc para la grabación en UHD
         - path: rtsp://127.0.0.1:8554/imou_cruiser_ptz
           roles:
             - record
-        # Usa subtype=1 directamente para la detección
+        # Usa el stream secundario SD directo para que el detector no sature la CPU
         - path: rtsp://admin:L2xr1zum@192.168.100.124:554/cam/realmonitor?channel=1&subtype=1
           roles:
             - detect
@@ -38,15 +37,8 @@ cameras:
         days: 7
         mode: all
 
-    onvif:
-      host: 192.168.100.124
-      port: 80
-      user: admin
-      password: L2xr1zum
-
   imou_cruiser_fija:
     ffmpeg:
-      input_args: preset-rtsp-generic
       inputs:
         - path: rtsp://127.0.0.1:8554/imou_cruiser_fija
           roles:
